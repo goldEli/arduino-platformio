@@ -1,0 +1,30 @@
+{
+    "version": 1,
+    "author": "缪宇",
+    "editor": "wokwi",
+    "parts": [
+      { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+      {
+        "type": "wokwi-7segment",
+        "id": "sevseg1",
+        "top": 91.38,
+        "left": -119.72,
+        "attrs": { "common": "cathode" }
+      }
+    ],
+    "connections": [
+      [ "esp:TX", "$serialMonitor:RX", "", [] ],
+      [ "esp:RX", "$serialMonitor:TX", "", [] ],
+      [ "esp:32", "sevseg1:A", "green", [ "h-81.41", "v0", "h-9.6" ] ],
+      [ "sevseg1:B", "esp:33", "green", [ "v0" ] ],
+      [ "sevseg1:C", "esp:25", "green", [ "v9.6", "h19.2", "v-67.2" ] ],
+      [ "sevseg1:D", "esp:26", "green", [ "v19.2", "h48", "v-67.2" ] ],
+      [ "sevseg1:E", "esp:27", "green", [ "v28.8", "h67.2", "v-67.2" ] ],
+      [ "sevseg1:F", "esp:14", "green", [ "v-27.96", "h86.4", "v67.2", "h9.6" ] ],
+      [ "sevseg1:G", "esp:12", "green", [ "v-18.36", "h86.4", "v67.2" ] ],
+      [ "sevseg1:DP", "esp:4", "green", [ "v57.6", "h192", "v-76.8" ] ],
+      [ "sevseg1:COM.1", "esp:GND.1", "green", [ "h0", "v38.4", "h86.4", "v-48" ] ],
+      [ "sevseg1:COM.2", "esp:GND.1", "green", [ "h0", "v-37.56", "h57.6", "v96" ] ]
+    ],
+    "dependencies": {}
+  }
