@@ -4,12 +4,15 @@
 #include <time.h>
 
 // WiFi 配置
-const char* ssid = "Ananna";
-const char* password = "lgjxc890890";
+const char* ssid = "";
+const char* password = "";
 
 // 数码管引脚
-const int SEGMENT_PINS[] = {32, 33, 25, 26, 27, 14, 12, 15};  // A B C D E F G DP
+const int SEGMENT_PINS[] = {32, 33, 25, 26, 27, 14, 12};  // A B C D E F G DP
 const int DIGIT_PINS[] = {19, 18, 17, 16};  // 位选
+const int TWO_DOT_PIN = 15;  // 小数点
+
+bool colonState = false;  // `:` 闪烁状态
 
 // 0-9 段码定义（共阴极）
 const uint8_t NUMBERS[10] = {
@@ -27,7 +30,6 @@ const uint8_t NUMBERS[10] = {
 
 // 存储当前时间的数组 {H1, H2, M1, M2}
 int displayDigits[4] = {2, 0, 4, 4};  
-bool dpState = false;  // `:` 闪烁状态
 
 
 // 获取系统时间并更新数码管显示
@@ -61,18 +63,20 @@ void waitingDisplay() {
       digitalWrite(SEGMENT_PINS[j], HIGH);
     }
   }
+
+  // digitalWrite(TWO_DOT_PIN, HIGH);
 }
 
 // 显示单个数字
-void displayDigit(int digit, int number, bool showDP) {
+void displayDigit(int digit, int number) {
   // 关闭所有位选
   for (int i = 0; i < 4; i++) {
     digitalWrite(DIGIT_PINS[i], HIGH);
   }
 
   // 设置段码（控制 DP 小数点）
-  uint8_t segments = NUMBERS[number] | (showDP ? 0b10000000 : 0);
-  for (int i = 0; i < 8; i++) {
+  uint8_t segments = NUMBERS[number]; 
+  for (int i = 0; i < sizeof(SEGMENT_PINS) / sizeof(SEGMENT_PINS[0]); i++) {
     digitalWrite(SEGMENT_PINS[i], (segments >> i) & 0x01);
   }
 
@@ -87,7 +91,8 @@ void setup() {
   WiFi.begin(ssid, password);
   Serial.print("正在连接WiFi...");
   // 设置数码管引脚为输出
-  for (int i = 0; i < 8; i++) pinMode(SEGMENT_PINS[i], OUTPUT);
+  pinMode(TWO_DOT_PIN, OUTPUT);
+  for (int i = 0; i < sizeof(SEGMENT_PINS) / sizeof(SEGMENT_PINS[0]); i++) pinMode(SEGMENT_PINS[i], OUTPUT);
   for (int i = 0; i < 4; i++) pinMode(DIGIT_PINS[i], OUTPUT);
   waitingDisplay();
   while (WiFi.status() != WL_CONNECTED) {
@@ -100,8 +105,10 @@ void setup() {
   configTime(8 * 3600, 0, "pool.ntp.org");
 
 
+
   updateTime();  // 初始化时更新时间
 }
+
 
 void loop() {
   // 每 1 秒更新时间
@@ -109,17 +116,15 @@ void loop() {
   if (millis() - lastUpdate > 1000) {
     lastUpdate = millis();
     updateTime();
-    dpState = !dpState;  // 每秒切换 `:` 状态
+    colonState = !colonState;  // 每秒切换 `:` 状态
+    digitalWrite(TWO_DOT_PIN, colonState ? LOW : HIGH);  // 共阴极：低电平点亮
   }
 
 
-    // displayDigit(0, 1, false);
-    // displayDigit(1, 2, false);
-    // displayDigit(2, 3, false);
-    // displayDigit(3, 4, false);
   // 显示数码管（动态扫描）
   for (int i = 0; i < 4; i++) {
-    displayDigit(i, displayDigits[3-i], (i == 1) && dpState);
+    displayDigit(i, displayDigits[3-i]);
     // delay(5);
   }
+
 }
